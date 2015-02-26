@@ -2,44 +2,75 @@ require_relative "../blinkstick-ruby/blinkstick"
 require_relative "./skype_calls"
 require_relative "./colors"
 
-def fade(b, from, to)
-  red_diff = to.red - from.red
-  green_diff = to.green - from.green
-  blue_diff = to.blue - from.blue
+class Square
+  attr_accessor :b, :colors, :active, :calls
 
-  red = from.red
-  green = from.green
-  blue = from.blue
+  def initialize
+    @b = BlinkStick.find_all.first
+    @active = 4
+    @colors = AGREEN * active
+    @b.set_colors(0, @colors)
 
-  # min_diff = [red_diff.abs, green_diff.abs, blue_diff.abs].min
-  iter = 30
-  (1..iter).each do |i|
-    red += red_diff / iter
-    green += green_diff / iter
-    blue += blue_diff / iter
-    b.set_colors(0, [green, red, blue] * 4)
-    sleep 0.05
+    @calls = SkypeCalls.new
   end
-end
 
-def run
-  b = BlinkStick.find_all.first
-  b.set_colors(0, [255, 0, 0] * 4)
-  calls = SkypeCalls.new
+  def fade_to(to)
+    iter = 30.0
+    from = @colors[0,3]
 
-  while true
-    if calls.new_active?
-      fade(b, GREEN, RED)
-      calls.update
-    elsif calls.finished?
-      fade(b, RED, GREEN)
-      calls.update
+    puts "from: #{from}; to: #{to}"
+
+    red_inc   = (to[0] - from[0]) / iter
+    green_inc = (to[1] - from[1]) / iter
+    blue_inc  = (to[2] - from[2]) / iter
+
+    puts "red_inc: #{red_inc}; green_inc: #{green_inc}; blue_inc: #{blue_inc}"
+
+    red = from[0]
+    green = from[1]
+    blue = from[2]
+
+    (1..iter).each do |i|
+      red += red_inc
+      green += green_inc
+      blue += blue_inc
+
+      @colors = [red, green, blue] * active
+      b.set_colors(0, colors)
+
+      sleep 0.05
     end
+  end
 
+  def red
+    fade_to(ARED)
+  end
+
+  def pulse_red
+    fade_to(ARED)
     sleep 0.05
+    fade_to(AWHITE)
+  end
+
+  def green
+    fade_to(AGREEN)
+  end
+
+  def run
+    while true
+      if calls.ringing?
+        pulse_red
+      elsif calls.inprogress?
+        red
+      elsif calls.finished_or_missed?
+        green
+      end
+
+      sleep 0.05
+    end
   end
 end
 
 if $0 == __FILE__
-  run()
+  Square.new.run
 end

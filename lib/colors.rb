@@ -4,6 +4,8 @@ RED = Color::RGB.new(255, 0, 0)
 GREEN = Color::RGB.new(0, 255, 0)
 WHITE = Color::RGB.new(255,255,255)
 
+AWHITE  = [255, 255, 255]
+ABLACK  = [0,     0,   0]
 ARED    = [0,   255,   0]
 AORANGE = [50,  255,   0]
 AYELLOW = [255, 255,   0]
