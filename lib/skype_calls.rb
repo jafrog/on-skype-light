@@ -15,6 +15,18 @@ class SkypeCalls
     Skype.exec "GET CALL #{calls.first} STATUS"
   end
 
+  def ringing?
+    call.status == :ringing
+  end
+
+  def inprogress?
+    call.status == :inprogress
+  end
+
+  def finished_or_missed?
+    [:finished, :missed].include? call.status
+  end
+
   def new_active?
     puts "new_active?"
     puts "  Status: #{status}"
