@@ -3,11 +3,11 @@ require_relative "./skype_calls"
 require_relative "./colors"
 
 class Strip
-  attr_accessor :b, :calls, :colors, :active
+  attr_accessor :b, :calls, :colors, :active, :default_colors
 
   def initialize(active: 8, colors: RAINBOW)
     @b = BlinkStick.find_all.first
-    @colors = colors
+    @colors = @default_colors = colors
     @b.set_colors(0, @colors)
     @active = active
 
@@ -15,14 +15,14 @@ class Strip
   end
 
   def rainbow
-    @colors = RAINBOW
-    @b.set_colors(0, @colors)
+    @b.set_colors(0, @default_colors)
   end
 
   def pulse_red
-    puts "pulse red"
     @colors = ARED * active
-    [8,7,6,5,4,5,6,7,8].each do |i|
+    ar = (1..active).to_a.reverse
+    ar = ar + ar.reverse
+    ar.each do |i|
       b.set_colors(0, ARED * i)
       sleep 0.05
     end
